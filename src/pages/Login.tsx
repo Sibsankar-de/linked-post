@@ -6,6 +6,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from '../components/ui/separator';
 import { Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import axiosInstance from '../configs/axios-configs';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 
 export function Login() {
@@ -38,8 +41,22 @@ export function Login() {
     e.preventDefault();
 
     if (!validateForm()) return;
-
     setIsLoading(true);
+    try {
+      await axiosInstance.post("/user/login", { email, password })
+        .then(() => {
+          window.location.href = `${window.location.origin}/`
+        })
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status as number;
+        if (status >= 400 && status < 500) toast.error(error.response?.data.message);
+      } else {
+        toast.error("Login failed! Please try again")
+      }
+    }
+
+    setIsLoading(false);
 
   };
 

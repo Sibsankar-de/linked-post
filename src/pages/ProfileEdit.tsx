@@ -29,7 +29,7 @@ export function ProfileEdit() {
   };
 
   return (
-    <div className="container">
+    <div className="page-container">
       <Card className="w-full">
         <CardHeader>
           <CardTitle>Edit Profile</CardTitle>

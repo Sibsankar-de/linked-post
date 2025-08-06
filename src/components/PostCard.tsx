@@ -1,21 +1,82 @@
 import { Card, CardContent, CardHeader } from './ui/card';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Heart, Bookmark, Share2, MoreHorizontal } from 'lucide-react';
+import { Heart, Bookmark, Share2, Dot, PencilLine } from 'lucide-react';
+import { useContext, useEffect, useState } from 'react';
+import axiosInstance from '../configs/axios-configs';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+import AuthContext from '../contexts/AuthContext';
 
 interface PostCardProps {
-  post: Record<string, any>
+  data: Record<any, any>
 }
 
-const mockUsers = {
-  '1': { name: 'John Doe', title: 'Software Engineer', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face' },
-  '2': { name: 'Sarah Wilson', title: 'Product Manager', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face' },
-  '3': { name: 'Mike Chen', title: 'Tech Lead', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face' }
-};
+export function PostCard({ data }: PostCardProps) {
+  const [post, setPost] = useState<Record<any, any> | null>(null);
+  const [postUser, setPostUser] = useState<Record<any, any> | null>(null);
+  const timeAgo = getTimeAgo(post?.createdAt);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [likeCount, setLikeCount] = useState<number>(0);
 
-export function PostCard({ post }: PostCardProps) {
-  const user = mockUsers[post.userId as keyof typeof mockUsers];
-  const timeAgo = getTimeAgo(post.timestamp);
+  const { user } = useContext(AuthContext)!;
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (data) {
+      setPost(data);
+      setPostUser(data?.postCreator[0]);
+      setIsLiked(post?.isLiked);
+      setIsSaved(post?.isSaved);
+      setLikeCount(post?.totalLikes);
+    }
+  }, [post]);
+
+  const handleLike = async () => {
+    try {
+      let endpoint = 'create-like';
+      if (isLiked) endpoint = 'remove-like';
+      await axiosInstance.post(`/post/${endpoint}`, { postId: data?._id })
+        .then(() => {
+          setIsLiked(!isLiked);
+          if (isLiked) setLikeCount(prev => prev - 1);
+          else setLikeCount(prev => prev + 1);
+        })
+
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status as number;
+        if (status === 401) navigate('/auth/login');
+        if (status >= 400 && status < 500) toast.error(error.response?.data.message);
+      } else {
+        toast.error("Something went wrong")
+      }
+    }
+  }
+
+  const handleSave = async () => {
+    try {
+      let endpoint = 'create-save';
+      if (isSaved) endpoint = 'remove-save';
+      await axiosInstance.post(`/post/${endpoint}/${data?._id}`)
+        .then(() => {
+          setIsSaved(!isSaved);
+        })
+
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status as number;
+        if (status === 401) navigate('/auth/login');
+        if (status >= 400 && status < 500) toast.error(error.response?.data.message);
+      } else {
+        toast.error("Something went wrong")
+      }
+    }
+  }
+
 
   return (
     <Card className="w-full">
@@ -23,38 +84,43 @@ export function PostCard({ post }: PostCardProps) {
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <Avatar>
-              <AvatarImage src={user?.avatar} alt={user?.name} />
-              <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
+              <AvatarImage src={postUser?.avatar} alt={postUser?.name} />
+              <AvatarFallback>{postUser?.fullName?.charAt(0)}</AvatarFallback>
             </Avatar>
-            <div>
-              <h3 className="font-semibold">{user?.name}</h3>
-              <p className="text-sm text-muted-foreground">{user?.title}</p>
-              <p className="text-xs text-muted-foreground">{timeAgo}</p>
+            <div className='flex items-center gap-3'>
+              <div>
+                <h3 className="font-semibold">{postUser?.fullName}</h3>
+                <p className="text-sm text-muted-foreground">@{postUser?.userName}</p>
+              </div>
+              <Dot />
+              <div>
+                <p className="text-xs text-muted-foreground">{timeAgo}</p>
+              </div>
             </div>
           </div>
         </div>
       </CardHeader>
 
       <CardContent className="pt-0">
-        <p className="text-sm leading-relaxed mb-4">{post.content}</p>
+        <p className="text-sm leading-relaxed mb-4">{post?.content?.text}</p>
 
         <div className="flex items-center justify-between pt-3 border-t border-border">
           <div className="flex items-center gap-4">
             <Button
               variant="outline"
-              // onClick={() => onLike(post.id)}
-              className={`flex items-center gap-2 ${post.isLiked ? 'text-red-500' : 'text-muted-foreground'}`}
+              onClick={handleLike}
+              className={`flex items-center gap-2 ${isLiked ? 'text-red-500' : 'text-muted-foreground'}`}
             >
-              <Heart className={`w-4 h-4 ${post.isLiked ? 'fill-current' : ''}`} />
-              <span className="text-xs">{post.likes}</span>
+              <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
+              <span className="text-xs">{likeCount}</span>
             </Button>
 
             <Button
               variant="outline"
-              // onClick={() => onSave(post.id)}
-              className={`flex items-center gap-2 ${post.isSaved ? 'text-blue-500' : 'text-muted-foreground'}`}
+              onClick={handleSave}
+              className={`flex items-center gap-2 ${isSaved ? 'text-blue-500' : 'text-muted-foreground'}`}
             >
-              <Bookmark className={`w-4 h-4 ${post.isSaved ? 'fill-current' : ''}`} />
+              <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
               <span className="text-xs">Save</span>
             </Button>
 
@@ -64,21 +130,30 @@ export function PostCard({ post }: PostCardProps) {
               className="flex items-center gap-2 text-muted-foreground"
             >
               <Share2 className="w-4 h-4" />
-              <span className="text-xs">{post.shares}</span>
             </Button>
           </div>
+          {(user?._id === postUser?._id) && <div>
+            <Button variant='primary' onClick={() => navigate(`/create-post?mode=edit&id=${post?._id}`)}>
+              <span><PencilLine className='w-4 h-4' /></span>
+              <span>Edit post</span>
+            </Button>
+          </div>}
         </div>
       </CardContent>
     </Card>
   );
 }
 
-function getTimeAgo(timestamp: Date): string {
+function getTimeAgo(createdAt: Date): string {
   const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - timestamp.getTime()) / 1000);
+  const seconds = Math.floor((now.getTime() - new Date(createdAt).getTime()) / 1000);
 
-  if (diffInSeconds < 60) return 'Just now';
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-  return `${Math.floor(diffInSeconds / 86400)}d ago`;
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(seconds / 3600);
+  const days = Math.floor(seconds / 86400);
+
+  if (seconds < 60) return 'Just now';
+  if (seconds < 3600) return `${minutes}m ago`;
+  if (seconds < 86400) return `${hours}h ago`;
+  return `${days}d ago`;
 }

@@ -1,11 +1,27 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { Button } from './ui/button';
 import { Plus } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import AuthContext from '../contexts/AuthContext';
+import axiosInstance from '../configs/axios-configs';
 
 export function Header() {
-  const [currentPage, setCurrentPage] = useState<string>("");
+  const { user, isAuthenticated } = useContext(AuthContext)!;
+  const [isLoading, setIsLoading] = useState(false);
+  const handleLogOut = async () => {
+    try {
+      setIsLoading(true);
+      await axiosInstance.get('/user/logout')
+        .then(() => {
+          window.location.reload();
+        })
+    } catch (error) {
+
+    }
+    setIsLoading(false);
+  }
+  const navigate = useNavigate();
   return (
     <header className="bg-card border-b border-border sticky top-0 z-50">
       <div className="px-10 py-2 w-screen flex items-center justify-between bg-[#ffffffc0] backdrop-blur-2xl">
@@ -14,14 +30,14 @@ export function Header() {
             <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-sm">LI</span>
             </div>
-            <span className="font-bold text-lg">LinkedClone</span>
+            <span className="font-bold text-lg">LinkedPost</span>
           </div>
         </Link>
 
         <nav className="flex items-center gap-3">
           <Link to={'/create-post'}>
             <Button
-              variant={currentPage === 'create-post' ? 'none' : 'primary'}
+              variant={'primary'}
               className="flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
@@ -29,14 +45,18 @@ export function Header() {
             </Button>
           </Link>
 
-          <Link to={'/profile'}>
-            <div className='bg-gray-300 rounded-full overflow-hidden'>
-              <Avatar className="w-10 h-10">
-                {/* <AvatarImage src={user.avatar} alt={user.name} /> */}
-                <AvatarFallback className="text-lg">{"Sibsankar".charAt(0)}</AvatarFallback>
-              </Avatar>
-            </div>
-          </Link>
+          <Button variant='outline' onClick={() => isAuthenticated ? handleLogOut() : navigate('/auth/login')} disabled={isLoading}>
+            {isAuthenticated ? <span className='text-red-400'>Logout</span>
+              : <span className='text-blue-400'>Sign in</span>
+            }
+          </Button>
+
+          {isAuthenticated && <Link to={`/profile/${user?.userName}`}>
+            <Avatar className="w-10 h-10">
+              <AvatarImage src={user?.avatar} alt={user?.userName} />
+              <AvatarFallback className="text-lg">{user?.fullName.charAt(0).toUpperCase()}</AvatarFallback>
+            </Avatar>
+          </Link>}
 
         </nav>
       </div>

@@ -7,11 +7,15 @@ import { Separator } from '../components/ui/separator';
 import { Checkbox } from '../components/ui/checkbox';
 import { Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import axiosInstance from '../configs/axios-configs';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 
 export function SignUp() {
   const [formData, setFormData] = useState({
-    name: '',
+    fullName: '',
+    userName: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -25,10 +29,16 @@ export function SignUp() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'Full name is required';
-    } else if (formData.name.trim().length < 2) {
-      newErrors.name = 'Name must be at least 2 characters';
+    if (!formData.fullName.trim()) {
+      newErrors.fullName = 'Full name is required';
+    } else if (formData.fullName.trim().length < 2) {
+      newErrors.fullName = 'Name must be at least 2 characters';
+    }
+
+    if (!formData.userName.trim()) {
+      newErrors.userName = 'User name name is required';
+    } else if (formData.userName.trim().length < 2) {
+      newErrors.userName = 'Username must be at least 2 characters';
     }
 
     if (!formData.email) {
@@ -61,17 +71,48 @@ export function SignUp() {
     e.preventDefault();
 
     if (!validateForm()) return;
-
     setIsLoading(true);
+    try {
+      await axiosInstance.post("/user/create", formData)
+        .then(async () => {
+          await axiosInstance.post("/user/login", { email: formData.email, password: formData.password })
+            .then(() => {
+              window.location.href = `${window.location.origin}/`
+            })
+        })
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status as number;
+        if (status >= 400 && status < 500) toast.error(error.response?.data.message);
+      } else {
+        toast.error("Signup failed! Please try again")
+      }
+    }
+    
+    setIsLoading(false);
 
   };
 
-  const handleInputChange = (field: keyof typeof formData, value: string) => {
+  const handleInputChange = async (field: keyof typeof formData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
+    // Check username
+    if (field === "userName") {
+      try {
+        await axiosInstance.get(`/user/validate-username/${value}`)
+          .then(res => {
+            const isValid = res.data?.data?.isUserNameAvailable;
+            if (!isValid)
+              errors['userName'] = "User is not available";
+          });
+      } catch (error) {
+
+      }
+    }
+
   };
 
   return (
@@ -101,12 +142,27 @@ export function SignUp() {
                   id="name"
                   type="text"
                   placeholder="John Doe"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  value={formData.fullName}
+                  onChange={(e) => handleInputChange('fullName', e.target.value)}
                   className={errors.name ? 'border-destructive' : ''}
                 />
-                {errors.name && (
-                  <p className="text-sm text-destructive">{errors.name}</p>
+                {errors.fullName && (
+                  <p className="text-sm text-destructive">{errors.fullName}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="name">Username</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="jhon_doe"
+                  value={formData.userName}
+                  onChange={(e) => handleInputChange('userName', e.target.value)}
+                  className={errors.name ? 'border-destructive' : ''}
+                />
+                {errors.userName && (
+                  <p className="text-sm text-destructive">{errors.userName}</p>
                 )}
               </div>
 
