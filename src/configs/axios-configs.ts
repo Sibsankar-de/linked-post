@@ -1,7 +1,7 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const REACT_APP_PROXY_URL = 'https://linked-post-server.onrender.com'
+const REACT_APP_PROXY_URL = 'https://linked-post-server-ek2y.onrender.com'
 
 const baseUrl = `${REACT_APP_PROXY_URL}/api/v1`
 const axiosInstance = axios.create({

@@ -88,7 +88,7 @@ export function SignUp() {
         toast.error("Signup failed! Please try again")
       }
     }
-    
+
     setIsLoading(false);
 
   };
@@ -195,7 +195,7 @@ export function SignUp() {
                   <Button
                     variant="ghost"
                     className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={(e) => { e.preventDefault(); setShowPassword(!showPassword) }}
                   >
                     {showPassword ? (
                       <EyeOff className="h-4 w-4" />
@@ -223,7 +223,7 @@ export function SignUp() {
                   <Button
                     variant="ghost"
                     className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    onClick={(e) => { e.preventDefault(); setShowConfirmPassword(!showConfirmPassword) }}
                   >
                     {showConfirmPassword ? (
                       <EyeOff className="h-4 w-4" />

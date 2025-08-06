@@ -24,12 +24,9 @@ export function Header() {
   const navigate = useNavigate();
   return (
     <header className="bg-card border-b border-border sticky top-0 z-50">
-      <div className="px-10 py-2 w-screen flex items-center justify-between bg-[#ffffffc0] backdrop-blur-2xl">
+      <div className="md:px-10 px-5 py-2 w-screen flex items-center justify-between bg-[#ffffffc0] backdrop-blur-2xl">
         <Link to={'/'}>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">LI</span>
-            </div>
             <span className="font-bold text-lg">LinkedPost</span>
           </div>
         </Link>

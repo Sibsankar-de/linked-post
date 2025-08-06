@@ -10,10 +10,11 @@ import { useNavigate } from 'react-router-dom';
 import AuthContext from '../contexts/AuthContext';
 
 interface PostCardProps {
-  data: Record<any, any>
+  data: Record<any, any>,
+  isEditActive?: boolean
 }
 
-export function PostCard({ data }: PostCardProps) {
+export function PostCard({ data, isEditActive = false }: PostCardProps) {
   const [post, setPost] = useState<Record<any, any> | null>(null);
   const [postUser, setPostUser] = useState<Record<any, any> | null>(null);
   const timeAgo = getTimeAgo(post?.createdAt);
@@ -132,7 +133,7 @@ export function PostCard({ data }: PostCardProps) {
               <Share2 className="w-4 h-4" />
             </Button>
           </div>
-          {(user?._id === postUser?._id) && <div>
+          {(user?._id === postUser?._id && isEditActive) && <div>
             <Button variant='primary' onClick={() => navigate(`/create-post?mode=edit&id=${post?._id}`)}>
               <span><PencilLine className='w-4 h-4' /></span>
               <span>Edit post</span>

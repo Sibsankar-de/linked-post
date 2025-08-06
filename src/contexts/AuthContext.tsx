@@ -41,9 +41,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 const LoadingComp = () => {
     return (
-        <div className='if-document-loading-box' >
-            <div className='if-document-loadbox-img-box' >
+        <div className='w-screen h-screen flex items-center justify-center' >
+            <div >
                 <DotSpinner width={50} />
+                <span>Loading...</span>
             </div>
         </div>
     )

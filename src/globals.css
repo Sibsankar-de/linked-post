@@ -188,8 +188,14 @@ html {
   font-size: var(--font-size);
 }
 
-.page-container{
+.page-container {
   margin: 0 5em;
   margin-top: 1em;
   margin-bottom: 1em;
+}
+
+@media screen and (max-width: 768px) {
+  .page-container {
+    margin: 1em 1em;
+  }
 }

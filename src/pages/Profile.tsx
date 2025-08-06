@@ -126,13 +126,13 @@ export function Profile() {
     <div className="page-container">
       <div className='mb-5'>
         <div className="p-5 flex items-center gap-5">
-          <Avatar className="w-50 h-50">
+          <Avatar className="md:w-50 md:h-50 w-30 h-30">
             <AvatarImage src={currentUser?.avatar} alt={currentUser?.fullName} />
-            <AvatarFallback className="text-[5em]">{currentUser?.fullName.charAt(0).toUpperCase()}</AvatarFallback>
+            <AvatarFallback className="md:text-[5em] text-[3em]">{currentUser?.fullName.charAt(0).toUpperCase()}</AvatarFallback>
           </Avatar>
 
           <div className="flex-1">
-            <h1 className="text-2xl font-bold">{currentUser?.fullName}</h1>
+            <p className="md:text-2xl text-xl font-bold">{currentUser?.fullName}</p>
             <p className="text-muted-foreground mb-2">@{currentUser?.userName}</p>
             <div className="flex items-center gap-3 mb-2">
               <div className='py-1.5 px-3 border rounded-2xl'>
@@ -180,6 +180,7 @@ export function Profile() {
             <PostCard
               key={post._id}
               data={post}
+              isEditActive={true}
             />
           ))
         ) : (

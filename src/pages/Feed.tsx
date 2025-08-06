@@ -26,7 +26,7 @@ export function Feed() {
         <p className="text-muted-foreground">Stay updated with the latest posts from your network</p>
       </div>
 
-      <div className="space-y-4 px-10">
+      <div className="space-y-4 md:px-10">
         {posts?.map(post => (
           <PostCard
             key={post.id}
